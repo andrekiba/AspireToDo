@@ -12,10 +12,10 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.13.0" />
     <PackageReference Include="Microsoft.Identity.Web" Version="4.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.9.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
     <PackageReference Include="Serilog.Sinks.AzureTableStorage" Version="10.2.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
     <PackageReference Include="Aspire.Azure.Data.Tables" Version="9.5.1" />
     <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.5.1" />
     <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="9.5.1" />

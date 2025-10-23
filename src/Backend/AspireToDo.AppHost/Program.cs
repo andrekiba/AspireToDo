@@ -50,8 +50,10 @@ if (builder.ExecutionContext.IsPublishMode)
     api.WithEnvironment("APPLICATIONINSIGHTS_CONNECTION_STRING", appInsights);
 }
 
+//builder.AddNpmApp("ui", "../../UI")
 builder.AddNpmApp("ui", "../../UI", "dev")
     .WithReference(api)
+    .WaitFor(api)
     .WithHttpEndpoint(name: "dev", env: "PORT")
     //.WithHttpsEndpoint(name: "dev", env: "PORT")
     .PublishAsDockerFile();

@@ -1,5 +1,6 @@
 using AspireToDo.Api.Infrastructure;
 using Microsoft.AspNetCore.HttpLogging;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,11 @@ builder.Services.AddLogger(builder.Configuration);
 builder.AddStorage(builder.Configuration);
 builder.AddRedisDistributedCache("cache");
 
+// Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
+
+// Add services to the container.
+builder.Services.AddProblemDetails();
 
 builder.Services.AddHttpLogging(options =>
 {
@@ -21,20 +26,21 @@ builder.Services.AddCors();
 //builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
+app.UseExceptionHandler();
+
 app.MapDefaultEndpoints();
 
-// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-//}
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
 //app.UseHttpsRedirection();
 app.UseCors(static builder =>
@@ -42,10 +48,8 @@ app.UseCors(static builder =>
         .AllowAnyHeader()
         .AllowAnyOrigin());
 
-//app.UseHttpsRedirection();
-
-app.UseWhen(context => !context.Request.Path.StartsWithSegments("/swagger"),
-    builder => builder.UseHttpLogging());
+app.UseWhen(context => !context.Request.Path.StartsWithSegments("/scalar"),
+    static builder => builder.UseHttpLogging());
 
 //app.UseAuthentication();
 //app.UseAuthorization();
