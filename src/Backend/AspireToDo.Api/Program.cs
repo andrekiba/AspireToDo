@@ -13,7 +13,6 @@ builder.AddRedisDistributedCache("cache");
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 
-// Add services to the container.
 builder.Services.AddProblemDetails();
 
 builder.Services.AddHttpLogging(options =>

@@ -39,18 +39,16 @@ public class TaskController : ControllerBase
 
         var cachedTasks = await cache.GetAsync("tasks");
 
-        if (cachedTasks is null)
+        if (cachedTasks is not null)
+            return new OkObjectResult(JsonSerializer.Deserialize<IEnumerable<TaskResult>>(cachedTasks));
+        
+        var tasksResult = await storageService.GetAllTasks();
+        await cache.SetAsync("tasks", Encoding.UTF8.GetBytes(JsonSerializer.Serialize(tasksResult)), new DistributedCacheEntryOptions
         {
-            var tasksResult = await storageService.GetAllTasks();
-            await cache.SetAsync("tasks", Encoding.UTF8.GetBytes(JsonSerializer.Serialize(tasksResult)), new()
-            {
-                AbsoluteExpiration = DateTime.Now.AddSeconds(10)
-            });
+            AbsoluteExpiration = DateTime.Now.AddSeconds(10)
+        });
 
-            return new OkObjectResult(tasksResult);
-        }
-
-        return new OkObjectResult(JsonSerializer.Deserialize<IEnumerable<TaskResult>>(cachedTasks));
+        return new OkObjectResult(tasksResult);
     }
 
     [HttpPost]

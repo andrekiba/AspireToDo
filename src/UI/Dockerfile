@@ -1,15 +1,22 @@
-FROM node:22.21
+FROM node:22.21 AS build
 
 WORKDIR /app
 
 COPY package.json package.json
-COPY package-lock.json package-lock.json
+#COPY package-lock.json package-lock.json
 
 RUN npm i
 
 COPY . .
 
-#EXPOSE 5173
-#EXPOSE $PORT
+RUN npm run build
 
-CMD [ "npm", "run", "dev" ]
+FROM nginx:alpine
+
+COPY --from=build /app/default.conf.template /etc/nginx/templates/default.conf.template
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Expose the default nginx port
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

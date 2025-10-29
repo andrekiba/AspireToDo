@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.1" />
+<Project Sdk="Microsoft.NET.Sdk">
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.2" />
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
@@ -9,23 +9,26 @@
         <UserSecretsId>e82c1f4b-5dc0-4f60-9ee4-31bc70b9e53e</UserSecretsId>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.1" />
-        <PackageReference Include="Aspire.Hosting.Azure.Redis" Version="9.5.1" />
-        <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="9.5.1" />
-        <PackageReference Include="Aspire.Hosting.NodeJs" Version="9.5.1" />
-        <PackageReference Include="Aspire.Hosting.Redis" Version="9.5.1" />
+        <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.2" />
+        <PackageReference Include="Aspire.Hosting.Azure.AppContainers" Version="9.5.2" />
+        <PackageReference Include="Aspire.Hosting.Azure.ContainerRegistry" Version="9.5.2-preview.1.25522.3" />
+        <PackageReference Include="Aspire.Hosting.Azure.Redis" Version="9.5.2" />
+        <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="9.5.2" />
+        <PackageReference Include="Aspire.Hosting.NodeJs" Version="9.5.2" />
+        <PackageReference Include="Aspire.Hosting.Redis" Version="9.5.2" />
+        <PackageReference Include="CommunityToolkit.Aspire.Hosting.NodeJS.Extensions" Version="9.8.0" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\AspireToDo.Api\AspireToDo.Api.csproj" />
     </ItemGroup>
 
-    <Target Name="RestoreNpm" BeforeTargets="Build" Condition=" '$(DesignTimeBuild)' != 'true' ">
-        <ItemGroup>
-            <PackageJsons Include="..\..\*\package.json" />
-        </ItemGroup>
-        <!-- Install npm packages if node_modules is missing -->
-        <Message Importance="Normal" Text="Installing npm packages for %(PackageJsons.RelativeDir)" Condition="!Exists('%(PackageJsons.RootDir)%(PackageJsons.Directory)/node_modules')" />
-        <Exec Command="npm install" WorkingDirectory="%(PackageJsons.RootDir)%(PackageJsons.Directory)" Condition="!Exists('%(PackageJsons.RootDir)%(PackageJsons.Directory)/node_modules')" />
-    </Target>
+<!--    <Target Name="RestoreNpm" BeforeTargets="Build" Condition=" '$(DesignTimeBuild)' != 'true' ">-->
+<!--        <ItemGroup>-->
+<!--            <PackageJsons Include="..\..\*\package.json" />-->
+<!--        </ItemGroup>-->
+<!--        &lt;!&ndash; Install npm packages if node_modules is missing &ndash;&gt;-->
+<!--        <Message Importance="Normal" Text="Installing npm packages for %(PackageJsons.RelativeDir)" Condition="!Exists('%(PackageJsons.RootDir)%(PackageJsons.Directory)/node_modules')" />-->
+<!--        <Exec Command="npm install" WorkingDirectory="%(PackageJsons.RootDir)%(PackageJsons.Directory)" Condition="!Exists('%(PackageJsons.RootDir)%(PackageJsons.Directory)/node_modules')" />-->
+<!--    </Target>-->
     
 </Project>

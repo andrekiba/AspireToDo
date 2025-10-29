@@ -1,3 +1,6 @@
 {
-  "appHostPath": "../AspireToDo.AppHost/AspireToDo.AppHost.csproj"
+  "appHostPath": "../AspireToDo.AppHost/AspireToDo.AppHost.csproj",
+  "features": {
+    "deployCommandEnabled": "true"
+  }
 }

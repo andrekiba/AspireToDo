@@ -13,13 +13,13 @@ export default defineConfig({
     server: {
         host: true,
         port: parseInt(process.env.PORT ?? "5173"),
-        // proxy: {
-        //     '/api': {
-        //         target: process.env.services__api__https__0 || process.env.services__api__http__0,
-        //         changeOrigin: true,
-        //         rewrite: path => path.replace(/^\/api/, ''),
-        //         secure: false
-        //     }
-        // }
+        proxy: {
+            '/api': {
+                target: process.env.services__api__https__0 || process.env.services__api__http__0,
+                changeOrigin: true,
+                rewrite: path => path.replace(/^\/api/, ''),
+                secure: false
+            }
+        }
     }
 })
