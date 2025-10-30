@@ -1,4 +1,5 @@
 using AspireToDo.Api.Infrastructure;
+using AspireToDo.ServiceDefaults;
 using Microsoft.AspNetCore.HttpLogging;
 using Scalar.AspNetCore;
 

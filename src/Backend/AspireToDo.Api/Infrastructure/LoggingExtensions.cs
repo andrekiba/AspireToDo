@@ -12,7 +12,7 @@ public static class LoggingExtensions
             .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Code)
             .MinimumLevel.Information()
 #else
-            .WriteTo.AzureTableStorage(config.GetValue<string>("Storage:AzureWebJobsStorage"), storageTableName: "ToDoLog")
+            .WriteTo.AzureTableStorage(config.GetValue<string>("ConnectionStrings:tables"), storageTableName: "ToDoLog")
             .MinimumLevel.Error()
 #endif
             .CreateLogger();

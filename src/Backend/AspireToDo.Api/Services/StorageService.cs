@@ -17,12 +17,11 @@ public class StorageService
         this.config = config;
         //var tableServiceClient = tableServiceClientFactory.CreateClient("todoTableClient");
         taskTable = tableServiceClient.GetTableClient(Constants.TaskTable);
+        taskTable.CreateIfNotExists();
     }
     
     public async Task<TaskResult> GetTask(string id)
     {
-        await taskTable.CreateIfNotExistsAsync();
-        
         var task = (await taskTable.GetEntityAsync<Task>(Constants.TaskPartitionKey, id)).Value;
         return new TaskResult
         {
@@ -35,8 +34,6 @@ public class StorageService
     
     public async Task<IEnumerable<TaskResult>> GetAllTasks()
     {
-        await taskTable.CreateIfNotExistsAsync();
-        
         var segment = taskTable.QueryAsync<Task>();
         return (await segment.ToListAsync()).Select(x => new TaskResult
         {
@@ -49,8 +46,6 @@ public class StorageService
     
     public async Task<string> CreateTask(string title, string description)
     {
-        await taskTable.CreateIfNotExistsAsync();
-        
         var task = Task.Create(title, description);
         var response = await taskTable.AddEntityAsync(task);
         return task.RowKey;

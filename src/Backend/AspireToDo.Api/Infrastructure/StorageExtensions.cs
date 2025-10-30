@@ -26,24 +26,7 @@ public static class StorageExtensions
     {
         var services = builder.Services;
 
-        builder.AddAzureTableClient("tables");
-        //builder.AddAzureBlobClient("blobs");
-
-        /*
-        builder.AddAzureTableService("tables", configureSettings: settings =>
-        {
-            settings.ServiceUri = new Uri("https://todoaspiredevst.table.core.windows.net/");
-            settings.HealthChecks = true;
-            settings.Tracing = true;
-        });
-
-        builder.AddAzureBlobService("blobs", configureSettings: settings =>
-        {
-            settings.ServiceUri = new Uri("https://todoaspiredevst.blob.core.windows.net/");
-            settings.HealthChecks = true;
-            settings.Tracing = true;
-        });
-        */
+        builder.AddAzureTableServiceClient("tables");
 
         services.AddSingleton(typeof(StorageService));
     }

@@ -9,33 +9,60 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 IResourceBuilder<IResourceWithConnectionString> tables;
 IResourceBuilder<IResourceWithConnectionString> cache;
+IResourceBuilder<IResourceWithConnectionString> ai = null!;
+IResourceBuilder<ParameterResource> env = null!;
 
 const string projectName = "aspiretodo";
-var env = builder.AddParameter("environmnet");
 
 if (builder.ExecutionContext.IsRunMode)
 {
     //1. use emulator
-    var storage = builder.AddAzureStorage("storage")
-        .RunAsEmulator(azurite =>
-    {
-        //azurite.WithLifetime(ContainerLifetime.Persistent);
-        azurite.WithDataVolume();
-    });
-    tables = storage.AddTables("tables");
+    // var storage = builder.AddAzureStorage("storage")
+    //     .RunAsEmulator(azurite =>
+    // {
+    //     //azurite.WithLifetime(ContainerLifetime.Persistent);
+    //     azurite.WithDataVolume();
+    // });
+    // tables = storage.AddTables("tables");
 
     //2. use an existing storage account as connection string
     //tables = builder.AddConnectionString("tables");
     
     //3. use an existing storage account
-    // var resourceGroupName = builder.AddParameter("resourceGroupName");
-    // var storageName = builder.AddParameter("storageName");
-    // var test = builder.AddAzureStorage("storage").RunAsExisting(storageName, resourceGroupName);
+    var resourceGroupName = builder.AddParameter("resourceGroupName");
+    var storageName = builder.AddParameter("storageAccountName");
+    var storage = builder.AddAzureStorage("storage").RunAsExisting(storageName, resourceGroupName);
+    tables = storage.AddTables("tables");
 
     cache = builder.AddRedis("cache");
+    //cache = builder.AddAzureRedis("cache").RunAsContainer();
 }
 else
 {
+    env = builder.AddParameter("environment");
+    
+    var log = builder.AddAzureLogAnalyticsWorkspace("log")
+        .ConfigureInfrastructure(infra =>
+        {
+            var resources = infra.GetProvisionableResources();
+            var log = resources.OfType<Azure.Provisioning.OperationalInsights.OperationalInsightsWorkspace>().Single();
+            var envParam = env.AsProvisioningParameter(infra);
+            log.Name = BicepFunction.Interpolate($"{projectName}-{envParam}-log").Compile();
+        });
+
+    ai = builder.AddAzureApplicationInsights("ai", log)
+        .ConfigureInfrastructure(infra =>
+        {
+            var resources = infra.GetProvisionableResources();
+            var appInsights = resources.OfType<Azure.Provisioning.ApplicationInsights.ApplicationInsightsComponent>()
+                .Single();
+            var envParam = env.AsProvisioningParameter(infra);
+            appInsights.Name = BicepFunction.Interpolate($"{projectName}-{envParam}-ai").Compile();
+            appInsights.IngestionMode = Azure.Provisioning.ApplicationInsights.ComponentIngestionMode.LogAnalytics;
+            appInsights.RetentionInDays = 30;
+        });
+        //.WithLogAnalyticsWorkspace(log);
+    
     var acr = builder.AddAzureContainerRegistry("acr")
         .ConfigureInfrastructure(infra =>    
         {
@@ -53,7 +80,8 @@ else
             var envParam = env.AsProvisioningParameter(infra);
             cae.Name = BicepFunction.Interpolate($"{projectName}-{envParam}-cae").Compile();
         })
-        .WithAzureContainerRegistry(acr);
+        .WithAzureContainerRegistry(acr)
+        .WithAzureLogAnalyticsWorkspace(log);
     
     //3. auto provision a new storage account fluent api
     var storage = builder.AddAzureStorage("storage")
@@ -80,9 +108,6 @@ else
                 Capacity = 1
             };
         });
-    // var cache = builder.AddRedis("cache")
-    // .WithAnnotation(new ManifestPublishingCallbackAnnotation(
-    // context => context.Writer.WriteString("type", "azure.redis.cache")));
 }
 
 var api = builder.AddProject<Projects.AspireToDo_Api>("api")
@@ -98,8 +123,7 @@ var api = builder.AddProject<Projects.AspireToDo_Api>("api")
 
 if (builder.ExecutionContext.IsPublishMode)
 {
-    var appInsights = builder.Configuration["AppInsights"];
-    api.WithEnvironment("APPLICATIONINSIGHTS_CONNECTION_STRING", appInsights);
+    api.WithReference(ai);
 }
 
 builder.AddNpmApp("ui", "../../UI", "start")
@@ -108,11 +132,11 @@ builder.AddNpmApp("ui", "../../UI", "start")
     .WaitFor(api)
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints()
-    .PublishAsDockerFile();
-    // .PublishAsAzureContainerApp((infra, app) =>
-    // {
-    //     var envParam = env.AsProvisioningParameter(infra);
-    //     app.Name = BicepFunction.Interpolate($"{projectName}-{envParam}-ui").Compile();
-    // });
+    .PublishAsDockerFile()
+    .PublishAsAzureContainerApp((infra, app) =>
+    {
+        var envParam = env.AsProvisioningParameter(infra);
+        app.Name = BicepFunction.Interpolate($"{projectName}-{envParam}-ui").Compile();
+    });
 
 builder.Build().Run();
