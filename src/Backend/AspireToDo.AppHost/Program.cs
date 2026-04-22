@@ -17,22 +17,22 @@ const string projectName = "aspiretodo";
 if (builder.ExecutionContext.IsRunMode)
 {
     //1. use emulator
-    // var storage = builder.AddAzureStorage("storage")
-    //     .RunAsEmulator(azurite =>
-    // {
-    //     //azurite.WithLifetime(ContainerLifetime.Persistent);
-    //     azurite.WithDataVolume();
-    // });
-    // tables = storage.AddTables("tables");
+    var storage = builder.AddAzureStorage("storage")
+        .RunAsEmulator(azurite =>
+    {
+        //azurite.WithLifetime(ContainerLifetime.Persistent);
+        azurite.WithDataVolume();
+    });
+    tables = storage.AddTables("tables");
 
     //2. use an existing storage account as connection string
     //tables = builder.AddConnectionString("tables");
     
     //3. use an existing storage account
-    var resourceGroupName = builder.AddParameter("resourceGroupName");
-    var storageName = builder.AddParameter("storageAccountName");
-    var storage = builder.AddAzureStorage("storage").RunAsExisting(storageName, resourceGroupName);
-    tables = storage.AddTables("tables");
+    // var resourceGroupName = builder.AddParameter("resourceGroupName");
+    // var storageName = builder.AddParameter("storageAccountName");
+    // var storage = builder.AddAzureStorage("storage").RunAsExisting(storageName, resourceGroupName);
+    // tables = storage.AddTables("tables");
 
     cache = builder.AddRedis("cache");
     //cache = builder.AddAzureRedis("cache").RunAsContainer();
@@ -126,8 +126,23 @@ if (builder.ExecutionContext.IsPublishMode)
     api.WithReference(ai);
 }
 
-builder.AddNpmApp("ui", "../../UI", "start")
-    .WithNpmPackageInstallation()
+builder.AddViteApp("ui", "../../UI")
+    .WithRunScript("start")
+    .WithNpm(installCommand: "ci")
+    .WithReference(api)
+    .WaitFor(api)
+    .WithExternalHttpEndpoints()
+    .PublishAsDockerFile()
+    .PublishAsAzureContainerApp((infra, app) =>
+    {
+        var envParam = env.AsProvisioningParameter(infra);
+        app.Name = BicepFunction.Interpolate($"{projectName}-{envParam}-ui").Compile();
+    });
+
+/*
+builder.AddJavaScriptApp("ui", "../../UI")
+    .WithRunScript("start")
+    .WithNpm(installCommand: "ci")
     .WithReference(api)
     .WaitFor(api)
     .WithHttpEndpoint(env: "PORT")
@@ -138,5 +153,6 @@ builder.AddNpmApp("ui", "../../UI", "start")
         var envParam = env.AsProvisioningParameter(infra);
         app.Name = BicepFunction.Interpolate($"{projectName}-{envParam}-ui").Compile();
     });
+*/
 
 builder.Build().Run();

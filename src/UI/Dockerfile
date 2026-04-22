@@ -19,4 +19,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Expose the default nginx port
 EXPOSE 80
 
+# Imposta la variabile per forzare il processing
+ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx/conf.d
+
 CMD ["nginx", "-g", "daemon off;"]
